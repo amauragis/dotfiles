@@ -1,7 +1,6 @@
 # pull in aliases and environment
 source $HOME/.config/fish/env.fish
 source $HOME/.config/fish/aliases.fish
-source $HOME/.config/fish/completions.fish
 
 if test -e $HOME/.config/fish/local.fish
   source $HOME/.config/fish/local.fish
