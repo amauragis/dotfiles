@@ -11,3 +11,6 @@ set -gx TERMINAL wezterm
 # Special snowflake variables
 set -gx PROJECTS "$HOME/projects"
 set -gx DOTFILES "$HOME/.dotfiles"
+
+# Set shell variable to fish
+set -gx SHELL /usr/bin/fish
