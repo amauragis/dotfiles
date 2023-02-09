@@ -72,7 +72,8 @@ local config = {
         fade_out_function = 'EaseOut',
         fade_out_duration_ms = 150,
     },
-    audible_bell = "Disabled"
+    audible_bell = "Disabled",
+    warn_about_missing_glyphs = false,
 }
 
 return config
