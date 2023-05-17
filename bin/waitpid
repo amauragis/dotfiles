@@ -1,0 +1,19 @@
+#!/bin/bash
+set -e
+
+usage() {
+    echo "Usage: `basename $0` <pid>"
+    echo ""
+    echo "Waits for the given pid to exit, then exits."
+    exit 1
+}
+
+if [ $# -ne 1 ]; then
+    usage
+fi
+
+pid=$1
+
+tail --pid=$pid -f /dev/null
+
+exit 0
