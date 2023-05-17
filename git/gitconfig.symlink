@@ -19,6 +19,7 @@
         ammend = commit --amend
         nevermind = !git reset --hard HEAD && git clean -d -f
         cclean = clean -ffdx -e .vscode -e venv -e .env
+        ff = merge --ff-only
 [color]
         diff = auto
         status = auto
