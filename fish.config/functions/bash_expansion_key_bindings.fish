@@ -32,7 +32,7 @@ end
 
 function bash_expansion_key_bindings
   bind ! _bash_expansion_bind_bang
-  bind '$' _bash_expansion_bind_dollar
+  # bind '$' _bash_expansion_bind_dollar
   # bind '$?' _bash_expansion_bind_status
   # bind '$$' _bash_expansion_bind_self
 end
