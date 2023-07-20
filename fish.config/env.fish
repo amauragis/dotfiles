@@ -14,3 +14,6 @@ set -gx DOTFILES "$HOME/.dotfiles"
 
 # Set shell variable to fish
 set -gx SHELL /usr/bin/fish
+
+# well I want it on.
+set -g fish_log_shell_history true

@@ -27,4 +27,8 @@ if type -q fzf
   source $HOME/.config/fish/fzf.fish
 end
 
+if set -q fish_log_shell_history
+  source $HOME/.config/fish/log_shell_history.fish
+end
+
 set -g fish_cmd_duration_threshold 500
