@@ -1,5 +1,7 @@
 # inspired by https://www.justinjoyce.dev/save-your-shell-history-to-log-files/
 
+status is-interactive; or exit 0
+
 if ! set -q shell_history_dir
     set -g shell_history_dir $HOME/.shell_logs
 end
@@ -45,7 +47,7 @@ function remove_last_shell_history --description "remove the last line of shell 
     end
     set -f orig_file $shell_history_dir/fish_$(date "+%Y-%m-%d").log
     set -f tmp_file $orig_file.tmp
-    head -n $count $orig_file > $tmp_file
+    head -n $count $orig_file >$tmp_file
     mv $tmp_file $orig_file
     rm -f $tmp_file
 end
@@ -57,5 +59,16 @@ if command -v rg &>/dev/null
 else
     function hist --description "Search shell history" --wraps grep
         grep -i $argv $shell_history_dir/*.log
+    end
+end
+
+if command -v fzf >/dev/null
+    function hs --description "Search shell history with fzf"
+        fd . ~/.shell_logs -X cat | fzf --scheme=history | read -l result
+        echo $result
+        if test -n "$result"
+            rg -C5 -F "$result" $shell_history_dir
+        end
+
     end
 end
