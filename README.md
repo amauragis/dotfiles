@@ -37,3 +37,18 @@ script/bootstrap
 
 This will symlink the appropriate files in `.dotfiles` to your home directory.
 Everything is configured and tweaked within `~/.dotfiles`.
+
+
+## List of utilties to install probably
+-  bcompare
+-  fish
+-  ruby (git-wtf)
+-  bash
+-  zstd
+-  p7zip
+-  fzf
+-  fd-find
+-  eza
+-  neovim
+-  tmux
+-  wezterm
