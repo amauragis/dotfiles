@@ -14,9 +14,6 @@ set -U fish_color_status red
 # clear greeting
 set -g fish_greeting
 
-# Path modifications
-set -g fish_user_paths $HOME/bin $DOTFILES/bin $HOME/.local/bin $HOME/.cargo/bin
-
 # autojump (autojump-fish pkg)
 if test -e /usr/share/autojump/autojump.fish
   source /usr/share/autojump/autojump.fish

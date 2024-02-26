@@ -1,0 +1,1 @@
+aliases['bcdiff'] = ['diff', '--diff-cmd', "/home/amauragis/.dotfiles/bin/bcdiff.sh"] # Use beyond compare for diff

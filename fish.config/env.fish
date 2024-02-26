@@ -12,6 +12,9 @@ set -gx TERMINAL wezterm
 set -gx PROJECTS "$HOME/projects"
 set -gx DOTFILES "$HOME/.dotfiles"
 
+# Path modifications
+set -g fish_user_paths $HOME/bin $DOTFILES/bin $HOME/.local/bin $HOME/.cargo/bin
+
 # Set shell variable to fish
 set -gx SHELL /usr/bin/fish
 
