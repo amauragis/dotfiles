@@ -55,12 +55,12 @@ local config = {
         border_right_color = '#bbbbbb',
         border_bottom_color = '#bbbbbb',
         border_top_color = '#bbbbbb',
-     },
+    },
     --window_padding = {
-        --left = 2,
-        --right = 2,
-        --top = 0,
-        --bottom = 0,
+    --left = 2,
+    --right = 2,
+    --top = 0,
+    --bottom = 0,
     --},
     leader = keybinds.leader,
     keys = keybinds.keys,
@@ -75,5 +75,15 @@ local config = {
     audible_bell = "Disabled",
     warn_about_missing_glyphs = false,
 }
+
+-- domain_stuff = {
+--     unix_domains = {
+--         {
+--             name = 'unix'
+--         },
+--     },
+--     default_gui_startup_args = { 'connect', 'unix' },
+-- }
+-- config = util.merge_tables(config, domain_stuff)
 
 return config

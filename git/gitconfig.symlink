@@ -29,6 +29,12 @@
         excludesfile = ~/.gitignore
         editor = nvim
         autocrlf = input
+        pager = delta # git-delta pkg on fedora
+[interactive]
+        diffFilter = delta --color-only
+[delta]
+        navigate = true
+        line-numbers = true
 [apply]
         whitespace = nowarn
 [mergetool]
@@ -50,10 +56,12 @@
         required = true
 [diff]
         tool = bc3
+        colorMoved = default
 [difftool "bc3"]
         trustExitCode = true
 [merge]
         tool = bc3
+        conflictStyle = diff3
 [mergetool "bc3"]
         trustExitCode = true
 [credential]

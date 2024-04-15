@@ -7,8 +7,8 @@ alias gp 'git push origin HEAD'
 alias gc 'git commit'
 alias gac 'git add -A; and git commit'
 alias gsu 'git submodule update --remote --merge'
-alias bbash 'set -lx NO_FISH 1; and exec bash --login'
-alias bsbash 'set -lx NO_FISH 1; and bash --login'
+alias bbash 'set -x NO_FISH 1 && exec bash --login'
+alias bsbash 'set -x NO_FISH 1 && and bash --login'
 
 # List so symbols
 alias sosym "nm --demangle --dynamic --defined-only --extern-only"
@@ -16,3 +16,6 @@ alias sosym "nm --demangle --dynamic --defined-only --extern-only"
 # tree stuff
 alias dtree "fd -td | tree --fromfile . --noreport -n"  # show non gitignored directories as a tree
 alias ftree "fd | tree --fromfile . --noreport -n"      # tree, but filtered through fd's default filters
+
+# fake dmesg
+alias klog "journalctl -ko short-monotonic --no-hostname --pager-end"
