@@ -52,3 +52,4 @@ Everything is configured and tweaked within `~/.dotfiles`.
 -  neovim
 -  tmux
 -  wezterm
+-  git-delta

@@ -14,16 +14,6 @@ set -U fish_color_status red
 # clear greeting
 set -g fish_greeting
 
-# autojump (autojump-fish pkg)
-if test -e /usr/share/autojump/autojump.fish
-  source /usr/share/autojump/autojump.fish
-end
-
-# fzf stuff
-if type -q fzf
-  source $HOME/.config/fish/fzf.fish
-end
-
 if set -q fish_log_shell_history
   source $HOME/.config/fish/log_shell_history.fish
 end
