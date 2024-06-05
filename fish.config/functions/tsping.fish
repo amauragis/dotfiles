@@ -37,11 +37,11 @@ OPTS:
         echo "fzf not found, interactive mode needs it."
         return 1
     end
-
+    set -f fzf_opts --layout=reverse --border --inline-info --height=40% --min-height=15 --marker="*"
     if set -q _flag_show_offline
-        set -f host (tailscale status | sed '/^#/d' | fzf --header-lines=1 | awk '{print $1}')
+        set -f host (tailscale status | sed '/^#/d' | fzf --header-lines=1 $fzf_opts | awk '{print $1}')
     else
-        set -f host (tailscale status | sed '/^#/d' | rg -v 'offline\s*$' | fzf --header-lines=1 | awk '{print $1}')
+        set -f host (tailscale status | sed '/^#/d' | rg -v 'offline\s*$' | fzf --header-lines=1 $fzf_opts | awk '{print $1}')
     end
 
     if test -z $host

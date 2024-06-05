@@ -12,6 +12,10 @@ set -gx TERMINAL wezterm
 set -gx PROJECTS "$HOME/projects"
 set -gx DOTFILES "$HOME/.dotfiles"
 
+# FZF defaults
+# set -gx FZF_DEFAULT_OPTS '--layout=reverse --border --inline-info --height=40% --min-height=15 --marker="*"'
+set -gx FZF_DEFAULT_COMMAND 'fd --type f'
+
 # Path modifications
 set -g fish_user_paths $HOME/bin $DOTFILES/bin $HOME/.local/bin $HOME/.cargo/bin
 
