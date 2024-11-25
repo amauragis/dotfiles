@@ -56,16 +56,16 @@ local config = {
         border_bottom_color = '#bbbbbb',
         border_top_color = '#bbbbbb',
     },
-    --window_padding = {
-    --left = 2,
-    --right = 2,
-    --top = 0,
-    --bottom = 0,
-    --},
+    window_padding = {
+        bottom = "5px",
+        left = "1cell",
+        right = "1cell",
+        top = "5px",
+      },
     leader = keybinds.leader,
     keys = keybinds.keys,
-    hide_tab_bar_if_only_one_tab = true,
-    window_decorations = "RESIZE",
+    hide_tab_bar_if_only_one_tab = false,
+    window_decorations = "RESIZE|INTEGRATED_BUTTONS",
     visual_bell = {
         fade_in_function = 'Linear',
         fade_in_duration_ms = 40,
@@ -74,6 +74,7 @@ local config = {
     },
     audible_bell = "Disabled",
     warn_about_missing_glyphs = false,
+    enable_wayland = false,
 }
 
 -- domain_stuff = {
