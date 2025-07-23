@@ -30,6 +30,12 @@ for file in $fisher_path/conf.d/*.fish
     source $file
 end
 
+# Go environment variables
+if command -v go &>/dev/null
+    set -gx GOPATH (go env GOPATH)
+    set -a fish_user_paths $GOPATH/bin
+end
+
 # Set shell variable to fish
 set -gx SHELL /usr/bin/fish
 
