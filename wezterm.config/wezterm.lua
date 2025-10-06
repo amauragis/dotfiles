@@ -18,6 +18,7 @@ local config = {
     automatically_reload_config = true,
     term = term_cfg,
     font = font_cfg,
+    scrollback_lines = 100000,
     font_size = 12,
     launch_menu = { {
         args = { "btop" }
@@ -47,14 +48,14 @@ local config = {
         button_bg = '#2b2042',
         button_hover_fg = '#ffffff',
         button_hover_bg = '#3b3052',
-        border_left_width = '0.25cell',
-        border_right_width = '0.25cell',
-        border_bottom_height = '0.125cell',
-        border_top_height = '0.125cell',
-        border_left_color = '#bbbbbb',
-        border_right_color = '#bbbbbb',
-        border_bottom_color = '#bbbbbb',
-        border_top_color = '#bbbbbb',
+        -- border_left_width = '0.25cell',
+        -- border_right_width = '0.25cell',
+        -- border_bottom_height = '0.125cell',
+        -- border_top_height = '0.125cell',
+        -- border_left_color = '#bbbbbb',
+        -- border_right_color = '#bbbbbb',
+        -- border_bottom_color = '#bbbbbb',
+        -- border_top_color = '#bbbbbb',
     },
     window_padding = {
         bottom = "5px",
@@ -64,7 +65,7 @@ local config = {
       },
     leader = keybinds.leader,
     keys = keybinds.keys,
-    hide_tab_bar_if_only_one_tab = false,
+    hide_tab_bar_if_only_one_tab = true,
     window_decorations = "RESIZE|INTEGRATED_BUTTONS",
     visual_bell = {
         fade_in_function = 'Linear',
@@ -74,7 +75,7 @@ local config = {
     },
     audible_bell = "Disabled",
     warn_about_missing_glyphs = false,
-    enable_wayland = false,
+    enable_wayland = true,
 }
 
 -- domain_stuff = {

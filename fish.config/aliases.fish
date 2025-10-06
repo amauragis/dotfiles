@@ -10,7 +10,7 @@ alias gcb 'git add -A && git commit -m stuff' # job security
 alias gcr 'git commit --amend --no-edit'
 alias gsu 'git submodule update --remote --merge'
 alias bbash 'set -x NO_FISH 1 && exec bash --login'
-alias bsbash 'set -x NO_FISH 1 && and bash --login'
+alias bsbash 'set -x NO_FISH 1 && bash --login'
 
 # List so symbols
 alias sosym "nm --demangle --dynamic --defined-only --extern-only"
