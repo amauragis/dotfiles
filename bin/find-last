@@ -1,0 +1,103 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+IFS=$'\n\t'
+
+usage() {
+  cat <<USAGE >&2
+Usage: $0 [-r] PATTERN [SEARCH_DIR]
+Search for files whose name matches PATTERN (a shell glob) in SEARCH_DIR (default: .).
+The output is sorted by modification time (most recent first by default) and shows a human
+readable modification time and the file path.
+
+Options:
+  -r              Sort in reverse (oldest first instead of newest first)
+  -h, --help      Show this help message
+
+Examples:
+  $0 '*.sh'            # find shell scripts under the current directory
+  $0 'Makefile' /tmp   # find Makefile under /tmp
+  $0 -r '*.txt'        # find text files, oldest first
+  $0 -h                # show help
+
+Notes:
+  - PATTERN is treated as a shell glob; quote it to prevent expansion, e.g. '*.sh'.
+USAGE
+}
+
+REVERSE=false
+
+while [[ ${1:-} == -* ]]; do
+  case $1 in
+    -r)
+      REVERSE=true
+      shift
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "Error: Unknown option $1" >&2
+      usage
+      exit 2
+      ;;
+  esac
+done
+
+if [ $# -lt 1 ]; then
+  usage
+  exit 2
+fi
+
+PAT=$1
+SEARCH_DIR=${2:-.}
+
+# Prefer fd (fd or fdfind) if present, fallback to find
+FINDER=()
+if command -v fd >/dev/null 2>&1; then
+  FINDER=(fd -0 --type f --glob "$PAT" "$SEARCH_DIR")
+elif command -v fdfind >/dev/null 2>&1; then
+  FINDER=(fdfind -0 --type f --glob "$PAT" "$SEARCH_DIR")
+else
+  FINDER=(find "$SEARCH_DIR" -type f -name "$PAT" -print0)
+fi
+
+# Determine stat variant: prefer GNU stat (stat/gstat). On macOS/BSD, fall back
+# to the BSD stat that uses -f format strings (we'll handle that separately).
+if stat --version >/dev/null 2>&1; then
+  STAT_BIN=stat
+elif gstat --version >/dev/null 2>&1; then
+  STAT_BIN=gstat
+else
+  STAT_BIN=bsd
+fi
+
+# Read list of files into array safely (null-terminated)
+mapfile -d '' -t files < <("${FINDER[@]}" || true)
+if [ ${#files[@]} -eq 0 ]; then
+  exit 0
+fi
+
+if [ "$STAT_BIN" != "bsd" ]; then
+  # Use GNU stat to print epoch, human date and filename (with null terminator)
+  SORT_FLAG="-k1,1nr"
+  [ "$REVERSE" = true ] && SORT_FLAG="-k1,1n"
+  printf '%s\0' "${files[@]}" \
+    | xargs -0 -n 1000 "$STAT_BIN" --printf='%Y\t%y\t%n\0' \
+    | tr '\0' '\n' \
+    | sort $SORT_FLAG \
+    | cut -f2- -d $'\t'
+else
+  # BSD stat (macOS): use stat -f with a datetime format and create null-terminated
+  # records by printing them with printf - we do this in a loop to avoid issues
+  # with the lack of --printf and null terminators on macOS stat.
+  SORT_FLAG="-k1,1nr"
+  [ "$REVERSE" = true ] && SORT_FLAG="-k1,1n"
+  for f in "${files[@]}"; do
+    out=$({ stat -f '%m'$'\t''%Sm'$'\t''%N' -t '%Y-%m-%d %H:%M:%S' -- "$f" 2>/dev/null || true; })
+    printf '%s\0' "$out"
+  done \
+    | tr '\0' '\n' \
+    | sort $SORT_FLAG \
+    | cut -f2- -d $'\t'
+fi
