@@ -11,8 +11,11 @@ local term_cfg = "xterm-256color"
 --     end
 -- end
 
-local font_cfg = wezterm.font_with_fallback({ "Iosevka Term", "JetBrains Mono", "Noto Color Emoji",
-    "Symbols Nerd Font Mono", "Last Resort High-Efficiency" })
+local font_cfg = wezterm.font_with_fallback(
+    { family = 'Iosevka Term', weight = 'Medium' }
+)
+
+-- local font_cfg = wezterm.font_with_fallback({"Menlo" })
 
 local config = {
     automatically_reload_config = true,
