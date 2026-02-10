@@ -1,0 +1,132 @@
+#!/usr/bin/env bash
+
+# jqi - interactive jq filter explorer
+#
+# Usage:
+#   jqi [options] [file ...]
+#   cat data.json | jqi [options]
+#
+# Opens an fzf interface where you type jq filters interactively.
+# The preview pane shows live jq output (including errors) as you type.
+#
+# Options:
+#   -F, --print-filter   Output the jq filter string instead of the result
+#   -h, --help           Show this help message
+#   --                   Stop processing jqi options; remaining args are jq flags/files
+#
+# Any other flags (e.g. -r, -S, -e, --slurp) are passed through to jq.
+
+set -euo pipefail
+
+# --- Dependency check ---
+for cmd in jq fzf; do
+  if ! command -v "$cmd" &>/dev/null; then
+    echo "jqi: requires '$cmd' but it's not installed." >&2
+    exit 1
+  fi
+done
+
+# --- Usage ---
+usage() {
+  sed -n '3,17s/^# \?//p' "${BASH_SOURCE[0]}"
+  exit "${1:-0}"
+}
+
+# --- Parse arguments ---
+PRINT_FILTER=0
+JQ_OPTS=()
+INPUT_FILES=()
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -h|--help)
+      usage 0
+      ;;
+    -F|--print-filter)
+      PRINT_FILTER=1
+      shift
+      ;;
+    --)
+      shift
+      # Remaining args: jq flags then files
+      while [[ $# -gt 0 ]]; do
+        if [[ "$1" == -* ]]; then
+          JQ_OPTS+=("$1")
+        else
+          INPUT_FILES+=("$1")
+        fi
+        shift
+      done
+      ;;
+    -*)
+      JQ_OPTS+=("$1")
+      shift
+      ;;
+    *)
+      INPUT_FILES+=("$1")
+      shift
+      ;;
+  esac
+done
+
+# --- Resolve input to a file jq can re-read ---
+TMPFILE=""
+cleanup() { [[ -n "$TMPFILE" ]] && rm -f "$TMPFILE"; }
+trap cleanup EXIT
+
+if [[ ! -t 0 ]]; then
+  # Stdin is piped — buffer to temp file
+  TMPFILE=$(mktemp "${TMPDIR:-/tmp}/jqi.XXXXXX")
+  cat > "$TMPFILE"
+  INPUT="$TMPFILE"
+elif [[ ${#INPUT_FILES[@]} -gt 0 ]]; then
+  if [[ ${#INPUT_FILES[@]} -eq 1 ]]; then
+    INPUT="${INPUT_FILES[0]}"
+  else
+    # Multiple files — concatenate into temp file (matches jq behavior)
+    TMPFILE=$(mktemp "${TMPDIR:-/tmp}/jqi.XXXXXX")
+    cat "${INPUT_FILES[@]}" > "$TMPFILE"
+    INPUT="$TMPFILE"
+  fi
+else
+  echo "jqi: no input. Provide a file or pipe JSON via stdin." >&2
+  echo "" >&2
+  usage 1
+fi
+
+# --- Build jq options string for the preview command ---
+JQ_OPTS_STR=""
+if [[ ${#JQ_OPTS[@]} -gt 0 ]]; then
+  JQ_OPTS_STR=$(printf '%q ' "${JQ_OPTS[@]}")
+fi
+
+# --- Launch fzf ---
+FILTER=$(
+  echo '' | fzf \
+    --disabled \
+    --print-query \
+    --query '.' \
+    --prompt 'jq> ' \
+    --preview "jq -C $JQ_OPTS_STR {q} $(printf '%q' "$INPUT") 2>&1" \
+    --preview-window 'up:99%:wrap' \
+    --no-info \
+    --pointer ' ' \
+    --gutter ' ' \
+    --color 'pointer:-1,current-bg:-1,current-fg:-1,gutter:-1' \
+    --bind 'change:refresh-preview' \
+    --header 'Enter: accept filter | Esc: cancel' | head -1
+) || {
+  code=$?
+  # fzf returns 130 on Esc/Ctrl-C — exit silently
+  if [[ $code -eq 130 ]]; then
+    exit 130
+  fi
+  exit "$code"
+}
+
+# --- Output ---
+if [[ "$PRINT_FILTER" -eq 1 ]]; then
+  echo "$FILTER"
+else
+  jq "${JQ_OPTS[@]}" "$FILTER" "$INPUT"
+fi
