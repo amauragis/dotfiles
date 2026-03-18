@@ -66,7 +66,6 @@
         trustExitCode = true
 [credential]
         helper = cache
-	helper = /usr/local/share/gcm-core/git-credential-manager
 [pull]
         ff = only
 [init]
