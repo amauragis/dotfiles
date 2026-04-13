@@ -41,7 +41,7 @@ OPTS:
     if set -q _flag_show_offline
         set -f host (tailscale status | sed '/^#/d' | fzf --header-lines=1 $fzf_opts | awk '{print $1}')
     else
-        set -f host (tailscale status | sed '/^#/d' | rg -v 'offline\s*$' | fzf --header-lines=1 $fzf_opts | awk '{print $1}')
+        set -f host (tailscale status | sed '/^#/d' | rg -v 'offline' | fzf --header-lines=1 $fzf_opts | awk '{print $1}')
     end
 
     if test -z $host
