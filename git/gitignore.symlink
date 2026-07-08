@@ -10,3 +10,5 @@ build_cmake/
 /gentex-cmake_dependencies/
 
 .vscode/
+
+.claude/settings.local.json
