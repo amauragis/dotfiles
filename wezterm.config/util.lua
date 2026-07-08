@@ -48,8 +48,13 @@ function M.convert_home_dir(path)
 end
 
 function M.file_exists(fname)
-    local stat = vim.loop.fs_stat(vim.fn.expand(fname))
-    return (stat and stat.type) or false
+    local path = fname:gsub("^~", os.getenv("HOME"))
+    local f = io.open(path, "r")
+    if f == nil then
+        return false
+    end
+    f:close()
+    return true
 end
 
 function M.convert_useful_path(dir)

@@ -1,9 +1,9 @@
 #!/bin/bash
-#small script to enable root access to x-windows system 
+#small script to enable root access to x-windows system
+#revoke root's X access on exit, even if the command is interrupted (e.g. Ctrl-C)
+trap 'xhost -SI:localuser:root' EXIT
 xhost +SI:localuser:root
-sudo $@
-#disable root access after application terminates
-xhost -SI:localuser:root
+sudo "$@"
 #print access status to allow verification that root access was removed
 xhost
 

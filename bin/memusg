@@ -2,7 +2,8 @@
 
 # retrieved https://gist.github.com/netj/526585#file-memusg 202210625
 # memusg -- Measure memory usage of processes
-# Usage: memusg COMMAND [ARGS]...
+# Usage: memusg [-l|--live] COMMAND [ARGS]...
+#   -l, --live    print each memory sample as it's taken, not just the peak
 #
 # Author: Jaeho Shin <netj@sparcs.org>
 # Created: 2010-08-16
@@ -23,6 +24,13 @@
 ############################################################################
 set -um
 
+# live: print each sample as it's taken, not just the peak at the end
+live=0
+if [[ "${1:-}" == "-l" || "${1:-}" == "--live" ]]; then
+    live=1
+    shift
+fi
+
 # check input
 [[ $# -gt 0 ]] || { sed -n '2,/^#$/ s/^# //p' <"$0"; exit 1; }
 
@@ -31,8 +39,20 @@ set -um
 pgid=$(ps -o pgid= $$)
 # make sure we're in a separate process group
 if [[ "$pgid" == "$(ps -o pgid= $(ps -o ppid= $$))" ]]; then
+    if [[ $live -eq 1 ]]; then
+        set -- "$0" --live "$@"
+    else
+        set -- "$0" "$@"
+    fi
+    if command -v setsid >/dev/null 2>&1; then
+        # setsid puts us in a new session/process group unconditionally, unlike
+        # the `bash -i` trick below, so it works without a controlling terminal
+        # (e.g. under CI, cron, or `docker exec` without -t).
+        exec setsid "$@"
+    fi
+    # Fallback for systems without setsid (e.g. macOS): rely on interactive
+    # bash's job control to force a new process group. Requires a tty.
     cmd=
-    set -- "$0" "$@"
     for a; do cmd+="'${a//"'"/"'\\''"}' "; done
     exec bash -i -c "$cmd"
 #   echo "bash -i -c "$cmd""
@@ -60,7 +80,9 @@ do
 #   printf "sample memusg: %.4f GiB (%d KiB)\n" $human_sample_bc $sample >&2
     let peak="sample > peak ? sample : peak"
     human_peak_bc=$(bc <<<"scale=6;$peak/1024/1024")
-#   printf "memusg: peak: %f GiB (%d KiB) sample: %f GiB (%d KiB)\n" $human_peak_bc $peak $human_sample_bc $sample >&2
+    if [[ $live -eq 1 ]]; then
+        printf "memusg: peak: %f GiB (%d KiB) sample: %f GiB (%d KiB)\n" $human_peak_bc $peak $human_sample_bc $sample >&2
+    fi
     sleep 0.1
 done
 #echo "memusg: peak=$peak" >&2

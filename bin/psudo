@@ -2,4 +2,4 @@
 
 # It's sudo but keeps your path!
 
-sudo env "PATH=$PATH" $@
+sudo env "PATH=$PATH" "$@"
