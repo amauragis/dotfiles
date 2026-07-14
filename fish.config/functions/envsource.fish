@@ -41,8 +41,8 @@ ARGS:
         return 0
     end
 
-    set -f envfile "$argv"
-    if test -z $envfile
+    set -f envfile "$argv[1]"
+    if test -z "$envfile"
         if test -f ".env"
             set -f envfile ".env"
             echo "Reading from '.env' file."
@@ -51,15 +51,18 @@ ARGS:
             return 1
         end
     end
-    if not test -f $envfile
+    if not test -f "$envfile"
         echo "File not found: $envfile"
         return 2
     end
 
     while read line
-        if not string match -qr '^#|^$' # skip empty lines and comments
+        if not string match -qr '^#|^$' -- "$line" # skip empty lines and comments
             if string match -qr '=' "$line" # if there is an =, we're setting a variable
                 set entry (string split -m 1 = "$line")
+                if string match -qr '[(){}`;&|<>]' -- "$entry[2]"
+                    echo "Warning: value for '$entry[1]' contains shell metacharacters and will be evaluated as fish code: '$entry[2]'" >&2
+                end
                 set entry[2] (eval echo $entry[2]) # expand variables in value
 
                 set -gx $entry[1] $entry[2]
@@ -74,6 +77,6 @@ ARGS:
                 end
             end
         end
-    end < $envfile
+    end < "$envfile"
 
 end
