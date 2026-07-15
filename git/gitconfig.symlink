@@ -65,7 +65,8 @@
 [mergetool "bc3"]
         trustExitCode = true
 [credential]
-        helper = cache
+	helper = 
+	helper = /usr/local/share/gcm-core/git-credential-manager
 [pull]
         ff = only
 [init]
