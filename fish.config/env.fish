@@ -17,27 +17,35 @@ set -gx DOTFILES "$HOME/.dotfiles"
 set -gx FZF_DEFAULT_COMMAND 'fd --type f'
 
 # Path modifications
-set -g fish_user_paths $HOME/bin $DOTFILES/bin $HOME/.local/bin $HOME/.cargo/bin
+fish_add_path --global $HOME/bin $DOTFILES/bin $HOME/.local/bin $HOME/.cargo/bin
 
 # set fisher location
-set -g fisher_path $HOME/.config/fish/fisher_plugins
+set -g fisher_path $__fish_config_dir/fisher_plugins
 
 # set fish completions and functions to pick up from fisher
-set fish_complete_path $fish_complete_path[1] $fisher_path/completions $fish_complete_path[2..]
-set fish_function_path $fish_function_path[1] $fisher_path/functions $fish_function_path[2..]
+if not contains -- $fisher_path/completions $fish_complete_path
+    set -g fish_complete_path $fish_complete_path[1] $fisher_path/completions $fish_complete_path[2..]
+end
+if not contains -- $fisher_path/functions $fish_function_path
+    set -g fish_function_path $fish_function_path[1] $fisher_path/functions $fish_function_path[2..]
+end
 
 for file in $fisher_path/conf.d/*.fish
     source $file
 end
 
 # Go environment variables
-if command -v go &>/dev/null
-    set -gx GOPATH (go env GOPATH)
-    set -a fish_user_paths $GOPATH/bin
+if command -q go
+    if not set -q GOPATH
+        set -gx GOPATH (go env GOPATH)
+    end
+    fish_add_path --global --append $GOPATH/bin
 end
 
 # Set shell variable to fish
-set -gx SHELL $(which fish)
+set -gx SHELL (status fish-path)
 
 # well I want it on.
-set -g fish_log_shell_history true
+if not set -q fish_log_shell_history
+    set -g fish_log_shell_history true
+end

@@ -1,6 +1,6 @@
 # inspired by https://www.justinjoyce.dev/save-your-shell-history-to-log-files/
 
-status is-interactive; or exit 0
+status is-interactive; or return
 
 if ! set -q shell_history_dir
     set -g shell_history_dir $HOME/.shell_logs
