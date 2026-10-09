@@ -24,7 +24,7 @@ success () {
 fail () {
   printf "\r\033[2K  [\033[0;31mFAIL\033[0m] $1\n"
   echo ''
-  exit
+  exit 1
 }
 
 setup_gitconfig () {
@@ -160,6 +160,30 @@ install_configs () {
   done
 }
 
+install_claude () {
+  info 'installing Claude Code configuration...'
+
+  local claude_dir="$HOME/.claude"
+  local overwrite_all=false backup_all=false skip_all=false
+
+  if [ -L "$claude_dir" ]
+  then
+    fail '~/.claude must be a real directory; migrate its contents before running bootstrap'
+  fi
+
+  mkdir -p "$claude_dir"
+  link_file "$DOTFILES_ROOT/claude/CLAUDE.md" "$claude_dir/CLAUDE.md"
+
+  if [ -e "$claude_dir/settings.json" ] || [ -L "$claude_dir/settings.json" ]
+  then
+    success 'kept existing Claude Code settings'
+  else
+    (umask 077; cp "$DOTFILES_ROOT/claude/settings.example.json" "$claude_dir/settings.json")
+    success 'initialized Claude Code settings'
+  fi
+}
+
+install_claude
 setup_gitconfig
 install_dotfiles
 install_configs
