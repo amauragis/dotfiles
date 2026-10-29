@@ -9,6 +9,6 @@ build_cmake/
 
 /gentex-cmake_dependencies/
 
-
+# We can specifically unignore in projects, I think.
 .vscode/
-.claude/settings.local.json
+settings.local.json
