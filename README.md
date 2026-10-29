@@ -24,8 +24,8 @@ There's a few special files in the hierarchy.
   isn't symlinked, because the first thing that used this was `fish`, which
   puts files in that directory that I didn't want to explicitly ignore nor
   include in this repo.)
-- **claude/**: Bootstrap links only the instructions into a real `~/.claude`
-  directory and seeds settings if absent. Claude's runtime data and live settings
+- **claude/**: Bootstrap links the instructions and each shared skill into a
+  real `~/.claude` directory and seeds settings if absent. Claude's runtime data and live settings
   stay outside the repository. See [Claude setup](claude/README.md).
 
 ## install

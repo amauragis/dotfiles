@@ -174,6 +174,24 @@ install_claude () {
   mkdir -p "$claude_dir"
   link_file "$DOTFILES_ROOT/claude/CLAUDE.md" "$claude_dir/CLAUDE.md"
 
+  # Link skills one by one; the Claude app owns ~/.claude/skills/synced
+  mkdir -p "$claude_dir/skills"
+  for src in "$DOTFILES_ROOT"/agents.symlink/skills/*/
+  do
+    link_file "${src%/}" "$claude_dir/skills/$(basename "$src")"
+  done
+
+  # Remove links to skills that no longer exist in the repo
+  for dst in "$claude_dir"/skills/*
+  do
+    if [ -L "$dst" ] && [ ! -e "$dst" ]
+    then
+      case "$(readlink "$dst")" in
+        "$DOTFILES_ROOT"/*) rm "$dst"; success "removed stale $dst";;
+      esac
+    fi
+  done
+
   if [ -e "$claude_dir/settings.json" ] || [ -L "$claude_dir/settings.json" ]
   then
     success 'kept existing Claude Code settings'
