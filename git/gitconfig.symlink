@@ -64,12 +64,11 @@
         conflictStyle = diff3
 [mergetool "bc3"]
         trustExitCode = true
-[credential]
-	helper = 
-	helper = /usr/local/share/gcm-core/git-credential-manager
 [pull]
         ff = only
 [init]
-	defaultBranch = main
-[credential "https://dev.azure.com"]
-	useHttpPath = true
+        defaultBranch = main
+
+[credential]
+        helper = cache --timeout 21600
+        helper = oauth
