@@ -32,7 +32,8 @@ function log_cmd_history --on-event fish_preexec
     if test $record_shell_history = false
         return
     end
-    echo $(date "+%Y-%m-%dT%H:%M:%S") $(pwd) "\$" $argv[1] >>"$shell_history_dir/fish_"$(date "+%Y-%m-%d")".log"
+    date "+%Y-%m-%d %Y-%m-%dT%H:%M:%S" | read -l day stamp
+    echo $stamp $PWD "\$" $argv[1] >>"$shell_history_dir/fish_$day.log"
 end
 
 function htoday --description "show shell history for today"
@@ -64,7 +65,7 @@ end
 
 if command -v fzf >/dev/null
     function hs --description "Search shell history with fzf"
-        fd . ~/.shell_logs -X cat | fzf --scheme=history | read -l result
+        fd . $shell_history_dir -X cat | fzf --scheme=history | read -l result
         echo $result
         if test -n "$result"
             rg -C5 -F "$result" $shell_history_dir
