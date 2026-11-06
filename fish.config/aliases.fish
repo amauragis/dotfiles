@@ -29,5 +29,8 @@ alias sosym "nm --demangle --dynamic --defined-only --extern-only"
 alias dtree "fd -td | tree --fromfile . --noreport -n"  # show non gitignored directories as a tree
 alias ftree "fd | tree --fromfile . --noreport -n"      # tree, but filtered through fd's default filters
 
+# bash-style !! (expands to the previous command when you hit space/enter)
+abbr -a !! --position anywhere --function last_history_item
+
 # fake dmesg
 alias klog "journalctl -ko short-monotonic --no-hostname --pager-end"
