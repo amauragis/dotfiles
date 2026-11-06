@@ -89,7 +89,8 @@ link_file () {
           S )
             skip_all=true;;
           * )
-            ;;
+            # Anything else (including Enter) is a skip, never a blind ln
+            skip=true;;
         esac
 
       fi
@@ -181,17 +182,6 @@ install_claude () {
     link_file "${src%/}" "$claude_dir/skills/$(basename "$src")"
   done
 
-  # Remove links to skills that no longer exist in the repo
-  for dst in "$claude_dir"/skills/*
-  do
-    if [ -L "$dst" ] && [ ! -e "$dst" ]
-    then
-      case "$(readlink "$dst")" in
-        "$DOTFILES_ROOT"/*) rm "$dst"; success "removed stale $dst";;
-      esac
-    fi
-  done
-
   if [ -e "$claude_dir/settings.json" ] || [ -L "$claude_dir/settings.json" ]
   then
     success 'kept existing Claude Code settings'
@@ -201,10 +191,35 @@ install_claude () {
   fi
 }
 
+prune_stale_links () {
+  info 'removing stale links...'
+
+  local conf_dir=${XDG_CONFIG_HOME:-$HOME/.config}
+  local link
+
+  # Only dangling links that point into this repo, i.e. files that were
+  # renamed or removed here; anything else in $HOME is left alone.
+  while IFS= read -r -d '' link
+  do
+    rm "$link"
+    success "removed stale $link"
+    case "$link" in
+      # Drop a config folder that only existed to hold this link
+      "$conf_dir"/*/*) rmdir "$(dirname "$link")" 2>/dev/null || true;;
+    esac
+  done < <(
+    find_args=(-xtype l -lname "$DOTFILES_ROOT/*" -print0)
+    find "$HOME" -maxdepth 1 "${find_args[@]}"
+    find "$conf_dir" -mindepth 2 -maxdepth 2 "${find_args[@]}"
+    find "$HOME/.claude/skills" -maxdepth 1 "${find_args[@]}" 2>/dev/null
+  )
+}
+
 install_claude
 setup_gitconfig
 install_dotfiles
 install_configs
+prune_stale_links
 
 echo ''
 echo '  All installed!'

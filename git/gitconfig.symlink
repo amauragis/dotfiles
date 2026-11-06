@@ -6,9 +6,6 @@
 [alias]
         s = status -sb
         co = checkout
-        promote = !$DOTFILES/bin/git-promote
-        wtf     = !$DOTFILES/bin/git-wtf
-        rank-contributors = !$DOTFILES/bin/git-rank-contributors
         count   = !git shortlog -sn
         branches = branch -a
         tags = tag
@@ -44,25 +41,22 @@
 [help]
         autocorrect = 1
 [push]
-        # See `git help config` (search for push.default)
-        # for more information on different options of the below setting.
-        #
-        # Setting to git 2.0 default to suppress warning message
-        default = simple
+        # First push of a new branch creates and tracks origin/<branch>
+        autoSetupRemote = true
 [filter "lfs"]
         clean = git-lfs clean -- %f
         smudge = git-lfs smudge -- %f
         process = git-lfs filter-process
         required = true
 [diff]
-        tool = bc3
+        tool = bc
         colorMoved = default
-[difftool "bc3"]
+[difftool "bc"]
         trustExitCode = true
 [merge]
-        tool = bc3
+        tool = bc
         conflictStyle = diff3
-[mergetool "bc3"]
+[mergetool "bc"]
         trustExitCode = true
 [pull]
         ff = only

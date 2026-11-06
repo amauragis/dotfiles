@@ -52,8 +52,11 @@ bind K confirm-before -p "Kill window '#W'? (y/n)" kill-window
 bind Q confirm-before -p "Kill session '#S'? (y/n)" kill-session
 
 # Clipboard integration - ctrl+c to send to clipboard; ctrl+v to paste from clipboard
-bind C-c run-shell 'tmux save-buffer - | xclip -r -selection clipboard -i > /dev/null'\; display-message "Copied to Clipboard";
-bind C-v run-shell "tmux set-buffer \"$(xclip -selection clipboard -o)\"; tmux paste-buffer"\; display-message "Pasted from Clipboard";
+bind C-c run-shell 'tmux save-buffer - | wl-copy'\; display-message "Copied to Clipboard";
+bind C-v run-shell 'wl-paste -n | tmux load-buffer - && tmux paste-buffer'\; display-message "Pasted from Clipboard";
+
+# Let apps inside tmux (nvim, ssh sessions) set the clipboard via OSC 52
+set -g set-clipboard on
 
 # enable mouse mode
 set -g mouse on
