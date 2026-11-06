@@ -1,0 +1,20 @@
+#!/usr/bin/env fish
+# Apply the tracked Tide prompt style. Tide keeps its settings in
+# universal variables (not in this repo), so run this once per machine
+# after `fisher update` has installed Tide.
+
+if not functions -q tide
+    echo "Tide is not installed; run 'fisher update' first." >&2
+    exit 1
+end
+
+tide configure --auto \
+    --style=Lean \
+    --prompt_colors='True color' \
+    --show_time='24-hour format' \
+    --lean_prompt_height='Two lines' \
+    --prompt_connection=Solid \
+    --prompt_connection_andor_frame_color=Dark \
+    --prompt_spacing=Compact \
+    --icons='Few icons' \
+    --transient=No

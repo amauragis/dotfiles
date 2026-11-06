@@ -64,3 +64,10 @@ To install:
 ```sh
 curl -sL https://raw.githubusercontent.com/jorgebucaran/fisher/main/functions/fisher.fish | source && fisher install jorgebucaran/fisher
 ```
+
+The prompt is [Tide](https://github.com/IlanCosman/tide). Its settings live
+in universal variables, so apply the tracked style once per machine:
+```sh
+fisher update
+script/configure-tide
+```
