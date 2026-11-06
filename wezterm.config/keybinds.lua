@@ -1,38 +1,31 @@
-local M = {}
 local wezterm = require("wezterm")
-local util = require("util")
+local act = wezterm.action
 
-M.leader = {
-    key = "a",
-    mods = "SUPER"
-}
+local M = {}
+
+-- tmux-style: Super+a, then the key
+M.leader = { key = "a", mods = "SUPER" }
 
 M.keys = {
-    { key = "a", mods = "LEADER|CTRL", action = wezterm.action { SendString = "\x01" } },
-    { key = '|', mods = 'LEADER|SHIFT', action = wezterm.action.SplitHorizontal { domain = 'CurrentPaneDomain' } },
-    { key = '\\', mods = 'LEADER', action = wezterm.action.SplitHorizontal { domain = 'CurrentPaneDomain' } },
-    { key = '-', mods = 'LEADER', action = wezterm.action.SplitVertical { domain = 'CurrentPaneDomain' } },
-    { key = "z", mods = "LEADER", action = "TogglePaneZoomState" },
-    { key = "c", mods = "LEADER", action = wezterm.action { SpawnTab = "CurrentPaneDomain" } },
-    { key = "h", mods = "LEADER", action = wezterm.action { ActivatePaneDirection = "Left" } },
-    { key = "j", mods = "LEADER", action = wezterm.action { ActivatePaneDirection = "Down" } },
-    { key = "k", mods = "LEADER", action = wezterm.action { ActivatePaneDirection = "Up" } },
-    { key = "l", mods = "LEADER", action = wezterm.action { ActivatePaneDirection = "Right" } },
-    { key = "H", mods = "LEADER|SHIFT", action = wezterm.action { AdjustPaneSize = { "Left", 5 } } },
-    { key = "J", mods = "LEADER|SHIFT", action = wezterm.action { AdjustPaneSize = { "Down", 5 } } },
-    { key = "K", mods = "LEADER|SHIFT", action = wezterm.action { AdjustPaneSize = { "Up", 5 } } },
-    { key = "L", mods = "LEADER|SHIFT", action = wezterm.action { AdjustPaneSize = { "Right", 5 } } },
-    { key = "1", mods = "LEADER", action = wezterm.action { ActivateTab = 0 } },
-    { key = "2", mods = "LEADER", action = wezterm.action { ActivateTab = 1 } },
-    { key = "3", mods = "LEADER", action = wezterm.action { ActivateTab = 2 } },
-    { key = "4", mods = "LEADER", action = wezterm.action { ActivateTab = 3 } },
-    { key = "5", mods = "LEADER", action = wezterm.action { ActivateTab = 4 } },
-    { key = "6", mods = "LEADER", action = wezterm.action { ActivateTab = 5 } },
-    { key = "7", mods = "LEADER", action = wezterm.action { ActivateTab = 6 } },
-    { key = "8", mods = "LEADER", action = wezterm.action { ActivateTab = 7 } },
-    { key = "9", mods = "LEADER", action = wezterm.action { ActivateTab = 8 } },
-    { key = "X", mods = "LEADER|SHIFT", action = wezterm.action { CloseCurrentTab = { confirm = true } } },
-    { key = "x", mods = "LEADER", action = wezterm.action { CloseCurrentPane = { confirm = true } } },
+    { key = "a", mods = "LEADER|CTRL", action = act.SendString("\x01") },
+    { key = "|", mods = "LEADER|SHIFT", action = act.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
+    { key = "\\", mods = "LEADER", action = act.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
+    { key = "-", mods = "LEADER", action = act.SplitVertical({ domain = "CurrentPaneDomain" }) },
+    { key = "z", mods = "LEADER", action = act.TogglePaneZoomState },
+    { key = "c", mods = "LEADER", action = act.SpawnTab("CurrentPaneDomain") },
+    { key = "x", mods = "LEADER", action = act.CloseCurrentPane({ confirm = true }) },
+    { key = "X", mods = "LEADER|SHIFT", action = act.CloseCurrentTab({ confirm = true }) },
 }
+
+-- hjkl moves between panes, HJKL resizes
+for key, dir in pairs({ h = "Left", j = "Down", k = "Up", l = "Right" }) do
+    table.insert(M.keys, { key = key, mods = "LEADER", action = act.ActivatePaneDirection(dir) })
+    table.insert(M.keys, { key = key:upper(), mods = "LEADER|SHIFT", action = act.AdjustPaneSize({ dir, 5 }) })
+end
+
+-- 1-9 jump to tabs
+for i = 1, 9 do
+    table.insert(M.keys, { key = tostring(i), mods = "LEADER", action = act.ActivateTab(i - 1) })
+end
 
 return M

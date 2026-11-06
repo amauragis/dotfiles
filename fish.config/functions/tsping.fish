@@ -37,14 +37,14 @@ OPTS:
         echo "fzf not found, interactive mode needs it."
         return 1
     end
-    set -f fzf_opts --layout=reverse --border --inline-info --height=40% --min-height=15 --marker="*"
-    if set -q _flag_show_offline
-        set -f host (tailscale status | sed '/^#/d' | fzf --header-lines=1 $fzf_opts | awk '{print $1}')
-    else
-        set -f host (tailscale status | sed '/^#/d' | rg -v 'offline' | fzf --header-lines=1 $fzf_opts | awk '{print $1}')
+    set -f peers (tailscale status | string match -v '#*')
+    if not set -q _flag_show_offline
+        # line 1 is this machine (shown as the fzf header); drop offline peers
+        set peers $peers[1] (string match -v '*offline*' -- $peers[2..])
     end
+    set -f host (printf '%s\n' $peers | fzf --height=40% --header-lines=1 | awk '{print $1}')
 
-    if test -z $host
+    if test -z "$host"
         return 0
     end
 

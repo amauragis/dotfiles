@@ -1,10 +1,6 @@
-
-function kraken --description "Open gitkraken"
-  # use a directory if you pass it in, otherwise cwd
-  if [ ! -z "$argv[1]" ]
-    set -f dir (realpath $argv[1])
-  else
-    set -f dir (pwd)
-  end
-  bash -c "gitkraken -p $dir" # /usr/bin/gitkraken is a bash script without a shebang.
+function kraken --description "Open gitkraken on a repo (default: cwd)"
+    set -l target $argv[1]
+    set -q target[1]; or set target .
+    set -l dir (realpath -e -- $target); or return
+    gitkraken -p $dir
 end

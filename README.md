@@ -42,27 +42,20 @@ This will symlink the appropriate files in `.dotfiles` to your home directory.
 Everything is configured and tweaked within `~/.dotfiles`.
 
 
-## List of utilties to install probably
--  bcompare
--  fish
--  ruby (git-wtf)
--  bash
--  zstd
--  p7zip
--  fzf
--  fd-find
--  eza
--  neovim
--  tmux
--  wezterm
--  git-delta
--  bat
+## Utilities to install
 
-Fish plugins are installed with `fisher`. See [here](https://github.com/jorgebucaran/fisher).
+- fish, bash
+- neovim (>= 0.12), tmux, wezterm, Iosevka Term font
+- fzf, fd-find, ripgrep, eza, bat, tree, jq
+- git-delta, git-lfs, git-credential-oauth, bcompare
+- zstd, p7zip, wl-clipboard
+- ruby (git-wtf, git-rank-contributors)
 
-To install:
+Fish plugins are managed by [fisher](https://github.com/jorgebucaran/fisher)
+and listed in `fish.config/fish_plugins`. Install fisher, then the plugins:
 ```sh
-curl -sL https://raw.githubusercontent.com/jorgebucaran/fisher/main/functions/fisher.fish | source && fisher install jorgebucaran/fisher
+script/install-fisher
+fisher update
 ```
 
 Neovim plugins are managed by the built-in `vim.pack` (nvim >= 0.12) and
@@ -71,8 +64,8 @@ install on first launch at the revisions pinned in
 the lockfile.
 
 The prompt is [Tide](https://github.com/IlanCosman/tide). Its settings live
-in universal variables, so apply the tracked style once per machine:
+in universal variables, so apply the tracked style once per machine, after
+the plugins are installed:
 ```sh
-fisher update
 script/configure-tide
 ```

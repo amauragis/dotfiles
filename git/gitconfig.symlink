@@ -1,8 +1,6 @@
 # Local/private config goes in the include
 [include]
         path = ~/.gitconfig.local
-[hub]
-        protocol = ssh
 [alias]
         s = status -sb
         co = checkout
@@ -17,11 +15,6 @@
         nevermind = !git reset --hard HEAD && git clean -d -f
         cclean = clean -ffdx -e .vscode -e venv -e .env
         ff = merge --ff-only
-[color]
-        diff = auto
-        status = auto
-        branch = auto
-        ui = true
 [core]
         excludesfile = ~/.gitignore
         editor = nvim
@@ -51,15 +44,22 @@
 [diff]
         tool = bc
         colorMoved = default
+        algorithm = histogram
 [difftool "bc"]
         trustExitCode = true
 [merge]
         tool = bc
-        conflictStyle = diff3
+        conflictStyle = zdiff3
 [mergetool "bc"]
         trustExitCode = true
 [pull]
         ff = only
+[fetch]
+        prune = true
+[rerere]
+        enabled = true
+[branch]
+        sort = -committerdate
 [init]
         defaultBranch = main
 

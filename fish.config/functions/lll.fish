@@ -4,6 +4,6 @@ if command -v eza &>/dev/null
     end
 else
     function lll --description "list files and directories" --wraps ls
-        ls -lart $argv
+        ls -lrt $argv
     end
 end

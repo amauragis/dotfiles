@@ -1,4 +1,3 @@
-
 function fcd --description "fuzzy change directory"
     argparse 'h/help' 'H/hidden' 'I/no-ignore' -- $argv
 
@@ -32,11 +31,7 @@ ARGS:
         set -f searchdir $argv[1]
     end
 
-    set -x FZF_DEFAULT_OPTS '--layout=reverse --inline-info --height=40% --min-height=15'
-    set -x FZF_DEFAULT_COMMAND 'fd --type f'
-
-    set -l dir (fd $fd_args --type d . $searchdir | fzf)
-    # set -l
+    set -l dir (fd $fd_args --type d . $searchdir | fzf --height=40%)
     if set -q dir[1]
         cd $dir
     end

@@ -23,7 +23,8 @@ COMMANDS:
   ls                list all open ports and the processes running in them
   show <port>       shows which process is running on a given port
   pid <port>        same as show, but prints only the PID
-  kill <port>       kill the process is running in the given port with kill -9
+  term <port>       stop the process running on the given port with SIGTERM
+  kill <port>       kill the process running on the given port with kill -9
 GLOBAL OPTIONS:
   --help,-h         show help"
   end

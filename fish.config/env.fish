@@ -12,8 +12,9 @@ set -gx TERMINAL wezterm
 set -gx PROJECTS "$HOME/projects"
 set -gx DOTFILES "$HOME/.dotfiles"
 
-# FZF defaults
-# set -gx FZF_DEFAULT_OPTS '--layout=reverse --border --inline-info --height=40% --min-height=15 --marker="*"'
+# FZF defaults. These start from fzf.fish's own defaults, which it only
+# applies when FZF_DEFAULT_OPTS is unset; functions add --height as needed.
+set -gx FZF_DEFAULT_OPTS '--cycle --layout=reverse --border --info=inline --height=90% --preview-window=wrap --marker="*"'
 set -gx FZF_DEFAULT_COMMAND 'fd --type f'
 
 # Path modifications
