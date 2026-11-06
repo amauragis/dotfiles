@@ -1,0 +1,40 @@
+{
+  "plugins": {
+    "is.vim": {
+      "rev": "d393cb346dcdf733fecd7bbfc45b70b8c05e9eb4",
+      "src": "https://github.com/haya14busa/is.vim"
+    },
+    "nerdcommenter": {
+      "rev": "a462bbda1e26f44fb3d3eb9d9d1c6a07aa98e665",
+      "src": "https://github.com/preservim/nerdcommenter"
+    },
+    "vim-airline": {
+      "rev": "8dc1bd0a116de527f6bc58c1d04386ba357c624f",
+      "src": "https://github.com/vim-airline/vim-airline"
+    },
+    "vim-airline-themes": {
+      "rev": "77aab8c6cf7179ddb8a05741da7e358a86b2c3ab",
+      "src": "https://github.com/vim-airline/vim-airline-themes"
+    },
+    "vim-easymotion": {
+      "rev": "b3cfab2a6302b3b39f53d9fd2cd997e1127d7878",
+      "src": "https://github.com/easymotion/vim-easymotion"
+    },
+    "vim-fugitive": {
+      "rev": "3b753cf8c6a4dcde6edee8827d464ba9b8c4a6f0",
+      "src": "https://github.com/tpope/vim-fugitive"
+    },
+    "vim-monokai": {
+      "rev": "ccaaf4bf983e828e46d47288d0278316486d718b",
+      "src": "https://github.com/crusoexia/vim-monokai"
+    },
+    "vim-sleuth": {
+      "rev": "be69bff86754b1aa5adcbb527d7fcd1635a84080",
+      "src": "https://github.com/tpope/vim-sleuth"
+    },
+    "vsc-easymotion": {
+      "rev": "34fb922c3cf5e88cff3f0824005e219dce83ea6f",
+      "src": "https://github.com/asvetliakov/vim-easymotion"
+    }
+  }
+}

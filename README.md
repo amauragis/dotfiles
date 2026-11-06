@@ -65,6 +65,11 @@ To install:
 curl -sL https://raw.githubusercontent.com/jorgebucaran/fisher/main/functions/fisher.fish | source && fisher install jorgebucaran/fisher
 ```
 
+Neovim plugins are managed by the built-in `vim.pack` (nvim >= 0.12) and
+install on first launch at the revisions pinned in
+`nvim.config/nvim-pack-lock.json`. Run `updatevim` to update them, then commit
+the lockfile.
+
 The prompt is [Tide](https://github.com/IlanCosman/tide). Its settings live
 in universal variables, so apply the tracked style once per machine:
 ```sh
