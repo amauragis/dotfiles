@@ -1,5 +1,7 @@
 function fish_cmd_duration_prompt
 
+    set -q CMD_DURATION[1]; or return
+    set -q fish_cmd_duration_threshold; or set -l fish_cmd_duration_threshold 500
     if test $CMD_DURATION -gt $fish_cmd_duration_threshold
         set -l time_color (set_color -i 080 green)
         if test $CMD_DURATION -gt 10000
