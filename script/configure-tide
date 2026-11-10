@@ -9,12 +9,17 @@ if not functions -q tide
 end
 
 tide configure --auto \
-    --style=Lean \
+    --style=Classic \
     --prompt_colors='True color' \
+    --classic_prompt_color=Dark \
     --show_time='24-hour format' \
-    --lean_prompt_height='Two lines' \
+    --classic_prompt_separators=Angled \
+    --powerline_prompt_heads=Sharp \
+    --powerline_prompt_tails=Round \
+    --powerline_prompt_style='Two lines, character' \
     --prompt_connection=Solid \
+    --powerline_right_prompt_frame=No \
     --prompt_connection_andor_frame_color=Dark \
-    --prompt_spacing=Compact \
+    --prompt_spacing=Sparse \
     --icons='Few icons' \
     --transient=No
