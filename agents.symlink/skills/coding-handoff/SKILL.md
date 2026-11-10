@@ -48,13 +48,23 @@ What makes a handoff good:
 - **One concrete next step.** The reader should be able to start working within a minute of reading. "Continue implementing rate limiting" is not a next step; "Make `test_retry_after` pass: `RateLimiter.acquire()` in `client/ratelimit.py:88` ignores the `Retry-After` header — parse it in `_handle_429()` and sleep that long" is.
 - **Short enough to read.** Aim for something a reader takes in within a few minutes — usually 60–200 lines. A handoff that reproduces the whole session defeats the point of a clean context. Cut narrative ("first I looked at…, then…"); keep conclusions.
 
-### 3. Keep it out of the way
+### 3. Make external references portable
+
+Before finalizing, identify reference files outside the current working tree that the next agent needs: source, configuration, protocol definitions, or documents. Do not assume another machine has those paths.
+
+- If any are needed, use the ask-user tool to ask whether to copy them into `.handoff/references/` for the handoff. Describe the proposed files or directories. If the user already explicitly requested copying them, proceed without asking again. If declined, record which references remain external and what their absence blocks.
+- Copy only the approved references and supporting files needed to understand them. Preserve useful directory structure, hidden files, and binary contents. Do not copy secrets, credentials, unrelated files, or entire repositories unnecessarily. Do not leave symlinks pointing outside the handoff.
+- Treat copies as reference snapshots, not runnable deployment configuration. Do not execute copied scripts or initialize hardware to package the handoff.
+- Record the original source locations and capture date, and point the handoff's reference links to the bundled copies using relative paths. Originals need not exist on the receiving machine. Document any runtime or dependency that is not included.
+- Verify that the copies match their sources byte-for-byte or by checksum and that the handoff's links resolve. Tell the user to transfer the whole `.handoff/` directory, including references, rather than only `HANDOFF.md`; the directory is normally ignored by Git.
+
+### 4. Keep it out of the way
 
 - If `.handoff/HANDOFF.md` already exists, it's the previous handoff. Move it to `.handoff/archive/HANDOFF-<YYYYMMDD-HHMM>.md` before writing the new one, and carry forward anything from it that's still open.
 - Add `.handoff/` to `.git/info/exclude` (local-only, unlike `.gitignore`) so the file doesn't show up in `git status` or get swept into a commit. Don't edit `.gitignore` and don't commit the handoff unless the user asks — e.g. they're resuming on a different machine, in which case committing it on the work branch is reasonable.
 - Don't commit, stash, or reset the user's work to make the handoff "cleaner." Describe the tree as it is. If uncommitted work would be at risk (say, they're about to switch machines), point that out in your reply and let them decide.
 
-### 4. Finish
+### 5. Finish
 
 Tell the user in a couple of lines where the file is, the one-sentence state of the work, and the next step. Give them the line to start the next agent with:
 
@@ -66,7 +76,7 @@ Tell the user in a couple of lines where the file is, the one-sentence state of 
 
 The handoff was true when it was written. Your job is to find out whether it still is before you build on it — the user or another agent may have touched the repo since.
 
-1. **Read `.handoff/HANDOFF.md` in full**, then read the files it points to for the next step. Skim `.handoff/archive/` only if the current handoff references it or something doesn't add up.
+1. **Read `.handoff/HANDOFF.md` in full**, then read the files it points to for the next step. Use bundled `.handoff/references/` snapshots when originals are unavailable; do not assume snapshots are current or runnable. Skim `.handoff/archive/` only if the current handoff references it or something doesn't add up.
 2. **Check for drift.** Take the same git snapshot as in Write mode and compare with the handoff's Git state: branch, HEAD commit, the set of modified/untracked files, stashes. Then rerun the verification commands it lists and compare results.
 3. **Report before working.** Give the user a short summary: the goal in a sentence, where things stand, and any drift you found ("HEAD is now `9f2e…`, two commits past the handoff — `fix: retry header parsing` looks like it addressed the next step"; "handoff says 1 failing test, now 3"). If there's no drift, say so in one line.
 4. **Decide whether to proceed.**
@@ -145,6 +155,7 @@ _From the git snapshot. Note anything at risk (uncommitted work, unpushed commit
 
 ## Key files
 _Where the relevant code lives, with one line on each. Pointers (path:line, symbol names), not pasted code._
+_Link bundled external references with relative paths and record their original locations/capture date. If copying was declined, identify external-only dependencies._
 
 - `path/to/file` —
 
