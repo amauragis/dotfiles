@@ -1,0 +1,180 @@
+#!/usr/bin/env bash
+#
+# Usage: git sup [remote...]
+#
+# Fetch remotes (all by default) and summarize what changed upstream:
+# new, updated, force-pushed and deleted remote branches, then the
+# commits waiting to be pulled into your local tracking branches.
+#
+# GIT_SUP_MAX sets how many commits to show per branch (default 10).
+
+set -euo pipefail
+
+git rev-parse --git-dir >/dev/null
+
+max=${GIT_SUP_MAX:-10}
+
+if [[ -t 1 ]]; then
+    bold=$'\e[1m' dim=$'\e[2m' reset=$'\e[0m'
+    green=$'\e[32m' yellow=$'\e[33m' red=$'\e[31m' cyan=$'\e[36m'
+    color=--color=always
+else
+    bold='' dim='' reset='' green='' yellow='' red='' cyan=''
+    color=--color=never
+fi
+
+if (( $# )); then
+    remotes=("$@")
+else
+    mapfile -t remotes < <(git remote)
+fi
+if (( ${#remotes[@]} == 0 )); then
+    echo "No remotes configured." >&2
+    exit 1
+fi
+
+# Print "<ref> <sha>" for every remote branch, skipping symrefs like
+# origin/HEAD.
+snapshot() {
+    local r
+    for r in "${remotes[@]}"; do
+        git for-each-ref --format='%(symref)|%(refname:short)|%(objectname)' \
+            "refs/remotes/$r/"
+    done | awk -F'|' '$1 == "" { print $2, $3 }'
+}
+
+# Resolve a remote's default branch, e.g. origin/main.
+default_branch() {
+    local r=$1 b
+    if b=$(git symbolic-ref -q --short "refs/remotes/$r/HEAD"); then
+        echo "$b"
+        return
+    fi
+    for b in main master; do
+        if git rev-parse -q --verify "refs/remotes/$r/$b" >/dev/null; then
+            echo "$r/$b"
+            return
+        fi
+    done
+}
+
+# Pick the ref a brand-new remote branch should be compared against, so
+# we list only the commits that branch introduces. Print nothing to skip
+# the commit list.
+base_for_new_branch() {
+    local ref=$1 remote=${1%%/*} base status
+    base=$(default_branch "$remote")
+    [[ -n $base && $base != "$ref" ]] || return 0
+
+    if git merge-base "$base" "$ref" >/dev/null; then
+        echo "$base"
+    else
+        status=$?
+        (( status == 1 )) || return "$status"
+    fi
+}
+
+# Print a oneline log for a revision range, capped at $max entries.
+show_log() {
+    local n
+    n=$(git rev-list --count "$@")
+    git log $color -n "$max" \
+        --format='    %C(yellow)%h%C(reset) %s %C(dim)(%an, %ar)%C(reset)' "$@"
+    if (( n > max )); then
+        echo "    ${dim}... and $((n - max)) more${reset}"
+    fi
+}
+
+plural() { (( $1 == 1 )) && echo "$1 $2" || echo "$1 ${2}s"; }
+
+declare -A before after
+while read -r ref sha; do before[$ref]=$sha; done < <(snapshot)
+
+echo "${dim}Fetching ${remotes[*]}...${reset}"
+git fetch --prune --quiet --multiple "${remotes[@]}"
+
+while read -r ref sha; do after[$ref]=$sha; done < <(snapshot)
+
+new=() updated=() deleted=()
+for ref in "${!after[@]}"; do
+    if [[ -z ${before[$ref]:-} ]]; then
+        new+=("$ref")
+    elif [[ ${before[$ref]} != "${after[$ref]}" ]]; then
+        updated+=("$ref")
+    fi
+done
+for ref in "${!before[@]}"; do
+    [[ -n ${after[$ref]:-} ]] || deleted+=("$ref")
+done
+
+sorted() { (( $# )) && printf '%s\n' "$@" | sort; }
+quiet=1
+
+if (( ${#new[@]} )); then
+    quiet=0
+    echo
+    echo "${bold}New branches${reset}"
+    while read -r ref; do
+        base=$(base_for_new_branch "$ref")
+        if [[ -n $base ]]; then
+            n=$(git rev-list --count "$base..$ref")
+            echo "  ${green}+ $ref${reset} ${dim}($(plural "$n" commit) vs $base)${reset}"
+            show_log "$base..$ref"
+        else
+            echo "  ${green}+ $ref${reset}"
+        fi
+    done < <(sorted "${new[@]}")
+fi
+
+if (( ${#updated[@]} )); then
+    quiet=0
+    echo
+    echo "${bold}Updated branches${reset}"
+    while read -r ref; do
+        old=${before[$ref]} cur=${after[$ref]}
+        n=$(git rev-list --count "$old..$cur")
+        if git merge-base --is-ancestor "$old" "$cur"; then
+            echo "  ${yellow}~ $ref${reset} ${dim}($(plural "$n" commit) new)${reset}"
+        else
+            dropped=$(git rev-list --count "$cur..$old")
+            echo "  ${red}! $ref${reset} ${dim}(force-pushed: +$n -$dropped)${reset}"
+        fi
+        show_log "$old..$cur"
+    done < <(sorted "${updated[@]}")
+fi
+
+if (( ${#deleted[@]} )); then
+    quiet=0
+    echo
+    echo "${bold}Deleted branches${reset}"
+    while read -r ref; do
+        echo "  ${red}- $ref${reset} ${dim}(was ${before[$ref]:0:7})${reset}"
+    done < <(sorted "${deleted[@]}")
+fi
+
+# Local branches whose upstream lives on one of the fetched remotes.
+header=0
+while read -r local upstream; do
+    [[ -n $upstream ]] || continue
+    [[ " ${remotes[*]} " == *" ${upstream%%/*} "* ]] || continue
+    git rev-parse -q --verify "refs/remotes/$upstream" >/dev/null || continue
+
+    behind=$(git rev-list --count "$local..$upstream")
+    (( behind > 0 )) || continue
+    ahead=$(git rev-list --count "$upstream..$local")
+
+    if (( ! header )); then
+        echo
+        echo "${bold}Waiting to be pulled${reset}"
+        header=1
+        quiet=0
+    fi
+    note="$(plural "$behind" commit) behind $upstream"
+    (( ahead == 0 )) || note+=", $ahead ahead"
+    echo "  ${cyan}$local${reset} ${dim}($note)${reset}"
+    show_log "$local..$upstream"
+done < <(git for-each-ref --format='%(refname:short) %(upstream:short)' refs/heads)
+
+if (( quiet )); then
+    echo "Nothing new upstream."
+fi

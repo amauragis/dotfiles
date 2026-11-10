@@ -1,0 +1,143 @@
+#!/usr/bin/env bash
+#
+# Usage: git worklog [options] [path...]
+#
+# Gather your commits since a date and print them as Markdown, grouped by
+# repo and day, ready to paste into a status update or hand to an LLM to
+# summarize.
+#
+# Options:
+#   -s, --since DATE     Start date, anything git understands
+#                        ("2026-11-01", "last monday", "2 weeks ago").
+#                        Default: "1 week ago".
+#   -u, --until DATE     End date. Default: now.
+#   -a, --author PAT     Only commits whose author matches PAT. Default:
+#                        each repo's user.email.
+#   -e, --everyone       Include commits from all authors.
+#   -r, --recursive      Treat each path as a directory to search for git
+#                        repos (it need not be a repo itself).
+#   -d, --depth N        Max search depth for --recursive. Default: 4.
+#   -b, --body           Include commit message bodies.
+#       --remotes        Also scan remote-tracking branches, not just local.
+#       --merges         Include merge commits (skipped by default).
+#   -h, --help           Show this help.
+#
+# Paths default to the current directory.
+
+set -euo pipefail
+
+usage() { sed -n '3,/^$/s/^# \{0,1\}//p' "$0"; }
+
+since="1 week ago" until="" author="" everyone=0 recursive=0 depth=4
+body=0 refs=(--branches) merges=(--no-merges)
+paths=()
+
+while (( $# )); do
+    case $1 in
+        -s|--since)     since=$2; shift ;;
+        -u|--until)     until=$2; shift ;;
+        -a|--author)    author=$2; shift ;;
+        -e|--everyone)  everyone=1 ;;
+        -r|--recursive) recursive=1 ;;
+        -d|--depth)     depth=$2; shift ;;
+        -b|--body)      body=1 ;;
+        --remotes)      refs=(--branches --remotes) ;;
+        --merges)       merges=() ;;
+        -h|--help)      usage; exit 0 ;;
+        --)             shift; paths+=("$@"); break ;;
+        -*)             echo "Unknown option: $1" >&2; usage >&2; exit 2 ;;
+        *)              paths+=("$1") ;;
+    esac
+    shift
+done
+(( ${#paths[@]} )) || paths=(.)
+
+# Collect repo top-level directories, one per line, deduplicated.
+find_repos() {
+    local p
+    for p in "${paths[@]}"; do
+        if (( recursive )); then
+            # A .git entry may be a directory or, for worktrees and
+            # submodules, a file. Skip descending into heavy trees.
+            find "$p" -maxdepth "$depth" \
+                \( -name node_modules -o -name .cache \) -prune -o \
+                -name .git -printf '%h\n' -prune 2>/dev/null
+        else
+            git -C "$p" rev-parse --show-toplevel 2>/dev/null \
+                || echo "warning: $p is not a git repo (try -r)" >&2
+        fi
+    done | while read -r d; do realpath "$d"; done | sort -u
+}
+
+mapfile -t repos < <(find_repos)
+if (( ${#repos[@]} == 0 )); then
+    echo "No git repositories found." >&2
+    exit 1
+fi
+
+range="since $since"
+[[ -n $until ]] && range+=", until $until"
+
+total_commits=0 total_repos=0
+out=""
+
+for repo in "${repos[@]}"; do
+    args=(-C "$repo" log "${refs[@]}" "${merges[@]}" --since="$since"
+          --date=format:%Y-%m-%d --date-order --reverse)
+    [[ -n $until ]] && args+=(--until="$until")
+
+    if (( ! everyone )); then
+        who=${author:-$(git -C "$repo" config user.email || true)}
+        [[ -n $who ]] && args+=(--author="$who")
+    fi
+
+    # Empty repos (no commits yet) make git log fail; treat as no output.
+    log=$(git "${args[@]}" \
+        --format='%x1e%h%x1f%ad%x1f%an%x1f%D%x1f%s%x1f%b' 2>/dev/null || true)
+    [[ -n $log ]] || continue
+
+    stat=$(git "${args[@]}" --format= --shortstat 2>/dev/null | awk '
+        { f += $1; for (i = 2; i <= NF; i++) {
+            if ($i ~ /^insertion/) a += $(i-1)
+            if ($i ~ /^deletion/)  d += $(i-1) } }
+        END { printf "%d files, +%d -%d", f, a, d }')
+
+    section=$(printf '%s' "$log" | awk -v RS='\x1e' -F'\x1f' \
+        -v body="$body" -v everyone="$everyone" '
+        NF < 5 { next }
+        {
+            n++
+            if ($2 != day) { day = $2; printf "\n### %s\n\n", day }
+            line = "- `" $1 "` " $5
+            if (everyone) line = line " — " $3
+            if ($4 != "") line = line " _(" $4 ")_"
+            print line
+            if (body) {
+                b = $6
+                sub(/^[[:space:]]+/, "", b); sub(/[[:space:]]+$/, "", b)
+                if (b != "") { gsub(/\n/, "\n  > ", b); print "  > " b }
+            }
+        }
+        END { printf "\x1d%d", n }')
+
+    n=${section##*$'\x1d'}
+    section=${section%$'\x1d'*}
+    name=${repo/#$HOME/\~}
+    out+=$'\n'"## $(basename "$repo")"$'\n\n'
+    out+="\`$name\` — $n commit$( (( n == 1 )) || echo s), $stat"$'\n'
+    out+="$section"$'\n'
+
+    (( total_commits += n, total_repos += 1 ))
+done
+
+if (( total_commits == 0 )); then
+    echo "No commits found ($range) in ${#repos[@]} repo(s)." >&2
+    exit 0
+fi
+
+echo "# Work log ($range)"
+echo
+who_line="all authors"
+(( everyone )) || who_line=${author:-"each repo's user.email"}
+echo "$total_commits commits across $total_repos repo(s); author: $who_line."
+printf '%s' "$out"
