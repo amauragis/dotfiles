@@ -19,7 +19,6 @@
         excludesfile = ~/.gitignore
         editor = nvim
         autocrlf = input
-        pager = delta # git-delta pkg on fedora
 [interactive]
         diffFilter = delta --color-only
 [delta]

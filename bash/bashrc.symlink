@@ -21,3 +21,11 @@ if [ -z "$BASH_EXECUTION_STRING" ] && [ -z "$NO_FISH" ] && [[ $- == *i* ]]; then
     echo "FYI: Fish not installed. Welcome to bash..."
   fi
 fi
+
+# pnpm
+export PNPM_HOME="$HOME/.local/share/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME:"*) ;;
+  *) export PATH="$PNPM_HOME:$PATH" ;;
+esac
+# pnpm end

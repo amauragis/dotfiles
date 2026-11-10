@@ -19,3 +19,10 @@ if status is-interactive
         source $__fish_config_dir/log_shell_history.fish
     end
 end
+
+# pnpm
+set -gx PNPM_HOME "$HOME/.local/share/pnpm"
+if not string match -q -- $PNPM_HOME $PATH
+  set -gx PATH "$PNPM_HOME" $PATH
+end
+# pnpm end
